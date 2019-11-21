@@ -1,21 +1,6 @@
 import React, { useState } from "react";
 import "./App.css";
 
-// type Time = number;
-
-// type Task = {
-//   duration: Time
-// }
-
-// type Frequency = {
-//   perDay: number,
-
-// }
-
-// function isItWorthTheTime(task) {}
-
-// function timeSaved(avoidedTask: Task): Time {}
-
 class Select<T extends string> extends React.Component<{
   value: T;
   onChange: (newValue: T) => void;
@@ -114,7 +99,12 @@ const TASK_FREQUENCY_UNIT_OPTIONS: Array<{
 ];
 const DEFAULT_TASK_FREQUENCY_UNIT = TASK_FREQUENCY_UNIT_OPTIONS[0].value;
 
-function useUnitValue<U, V>(defaultValue: V, defaultUnit: U) {
+type UnitValue<U, V> = {
+  value: V;
+  unit: U;
+};
+
+function useUnitValueState<U, V>(defaultValue: V, defaultUnit: U) {
   const [value, setValue] = React.useState<V | null>(defaultValue);
   const [unit, setUnit] = React.useState<U>(defaultUnit);
 
@@ -130,14 +120,40 @@ function useUnitValue<U, V>(defaultValue: V, defaultUnit: U) {
   };
 }
 
+function isFilled(unitValueState: { value: { current: any } }) {
+  return unitValueState.value.current !== null;
+}
+
+function toUnitValue<U, V>(unitValueState: {
+  value: {
+    current: V | null;
+  };
+  unit: {
+    current: U;
+  };
+}) {
+  if (unitValueState.value.current === null) {
+    throw new Error("Cannot work with null values");
+  }
+  return {
+    value: unitValueState.value.current,
+    unit: unitValueState.unit.current
+  };
+}
+
 const App: React.FC = () => {
-  const timeSpent = useUnitValue(1, DEFAULT_TIME_SPENT_UNIT);
-  const timeShaved = useUnitValue(1, DEFAULT_TIME_SHAVED_UNIT);
-  const taskLifetime = useUnitValue(2, DEFAULT_TASK_LIFETIME_UNIT);
-  const taskFrequency = useUnitValue(10, DEFAULT_TASK_FREQUENCY_UNIT);
+  const timeSpent = useUnitValueState(1, DEFAULT_TIME_SPENT_UNIT);
+  const timeShaved = useUnitValueState(1, DEFAULT_TIME_SHAVED_UNIT);
+  const taskLifetime = useUnitValueState(2, DEFAULT_TASK_LIFETIME_UNIT);
+  const taskFrequency = useUnitValueState(10, DEFAULT_TASK_FREQUENCY_UNIT);
   const [daysPerWeek, setDaysPerWeek] = React.useState<number | null>(5);
 
-  const timeSaved = 30;
+  const canComputeResult = [
+    timeShaved,
+    timeShaved,
+    taskLifetime,
+    taskFrequency
+  ].every(isFilled);
 
   return (
     <div className="App">
@@ -175,10 +191,6 @@ const App: React.FC = () => {
           onChange={taskFrequency.unit.set}
           options={TASK_FREQUENCY_UNIT_OPTIONS}
         />
-        {", "}
-        <br />
-        <NumberInput value={daysPerWeek} onChange={setDaysPerWeek} />
-        {" days per week,"}
         <br />
         {" for "}
         <NumberInput
@@ -191,11 +203,94 @@ const App: React.FC = () => {
           options={TASK_LIFETIME_UNIT_OPTIONS}
         />
       </div>
+
+      {/* TODO; Add advanced panel to define number of worked hours in a day and worked days in a week ? */}
+
+      {canComputeResult && (
+        <Result
+          timeSpent={toUnitValue(timeSpent)}
+          timeShaved={toUnitValue(timeShaved)}
+          taskFrequency={toUnitValue(taskFrequency)}
+          taskLifetime={toUnitValue(taskLifetime)}
+        />
+      )}
+    </div>
+  );
+};
+
+function normalizeTime({ value, unit }: UnitValue<TimeUnit, number>): number {
+  switch (unit) {
+    case "second":
+      return value;
+    case "minute":
+      return normalizeTime({ value: value * 60, unit: "second" });
+    case "hour":
+      return normalizeTime({ value: value * 60, unit: "minute" });
+    case "day":
+      // 7 work hours in a day
+      return normalizeTime({ value: value * 7, unit: "hour" });
+    case "week":
+      // 5 work days in a week
+      return normalizeTime({ value: value * 5, unit: "day" });
+    case "month":
+      // 21 work days in a month on average
+      return normalizeTime({ value: value * 21, unit: "day" });
+    case "year":
+      return normalizeTime({ value: value * 12, unit: "month" });
+  }
+}
+
+function normalizeFrequency({
+  value,
+  unit
+}: UnitValue<FrequencyUnit, number>): number {
+  switch (unit) {
+    case "daily":
+      // 7 work hours in a day
+      return value / (7 * 60 * 60);
+    case "weekly":
+      // 5 work days in a week
+      return normalizeFrequency({ value: value / 5, unit: "daily" });
+    case "monthly":
+      // 21 work days in a month on average
+      return normalizeFrequency({ value: value / 21, unit: "daily" });
+    case "yearly":
+      return normalizeFrequency({ value: value / 12, unit: "monthly" });
+  }
+}
+
+const Result: React.FC<{
+  timeSpent: UnitValue<TimeUnit, number>;
+  timeShaved: UnitValue<TimeUnit, number>;
+  taskFrequency: UnitValue<FrequencyUnit, number>;
+  taskLifetime: UnitValue<TimeUnit, number>;
+}> = () => {
+  // Values normalized for seconds
+  const nTimeSpent: number = 0; // seconds
+  const nTimeShaved: number = 0; // seconds
+  const nTaskFrequency: number = 0; // per second
+  const nTaskLifetime: number = 0; // seconds
+
+  const dailyTime = 0;
+  const initialTaskTime = 0;
+  const optimizedTaskTime = 0;
+  const gainRatio = 0;
+  const timeSaved = 30;
+  const worthIt = timeSaved > nTimeSpent;
+
+  return (
+    <div>
       <div>
         <b>Is it worth it?</b>
       </div>
-      <div>Yes</div>
+      <div>{worthIt ? "Yes" : "No"}</div>
+      <div>Average time for the task per day: {dailyTime}</div>
+      <div>Total time for the future task: {initialTaskTime}</div>
+      <div>
+        Total time for the future task, after optimization: {optimizedTaskTime}
+      </div>
       <div>Time saved: {timeSaved}</div>
+      <div>Time gain ratio: {gainRatio}</div>
     </div>
   );
 };
