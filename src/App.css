@@ -20,3 +20,20 @@
 .App-link {
   color: #09d3ac;
 }
+
+input {
+  width: 3em;
+  border: none;
+  border-bottom: 2px solid;
+  font-weight: bold;
+}
+
+select {
+  border: none;
+  background: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-bottom: 2px solid;
+  font-weight: bold;
+}
