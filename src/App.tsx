@@ -41,7 +41,7 @@ function NumberInput(props: {
         }
 
         const value = Math.max(0, parseInt(e.target.value, 10));
-        props.onChange(0);
+        props.onChange(value);
       }}
     />
   );
@@ -60,33 +60,46 @@ type FrequencyUnit = "daily" | "weekly" | "monthly" | "yearly";
 
 type TimeUnitOption = { value: TimeUnit; label: string };
 
-const TIME_SPENT_UNIT_OPTIONS: Array<TimeUnitOption> = [
-  { value: "minute", label: "minutes" },
-  { value: "hour", label: "hour" },
-  { value: "day", label: "day" },
-  { value: "week", label: "week" },
-  { value: "month", label: "month" },
-  { value: "year", label: "year" }
-];
-const DEFAULT_TIME_SPENT_UNIT = TIME_SPENT_UNIT_OPTIONS[1].value;
+const SECOND_OPTION: TimeUnitOption = { value: "second", label: "second" };
+const MINUTE_OPTION: TimeUnitOption = { value: "minute", label: "minute" };
+const HOUR_OPTION: TimeUnitOption = { value: "hour", label: "hour" };
+const DAY_OPTION: TimeUnitOption = { value: "day", label: "day" };
+const WEEK_OPTION: TimeUnitOption = { value: "week", label: "week" };
+const MONTH_OPTION: TimeUnitOption = { value: "month", label: "month" };
+const YEAR_OPTION: TimeUnitOption = { value: "year", label: "year" };
 
-const TIME_SHAVED_UNIT_OPTIONS: Array<TimeUnitOption> = [
-  { value: "second", label: "second" },
-  { value: "minute", label: "minute" },
-  { value: "hour", label: "hour" },
-  { value: "day", label: "day" },
-  { value: "week", label: "week" },
-  { value: "month", label: "month" }
+const TASK_DURATION_UNIT_OPTIONS = [
+  MINUTE_OPTION,
+  HOUR_OPTION,
+  DAY_OPTION,
+  WEEK_OPTION,
+  MONTH_OPTION
 ];
-const DEFAULT_TIME_SHAVED_UNIT = TIME_SHAVED_UNIT_OPTIONS[1].value;
 
-const TASK_LIFETIME_UNIT_OPTIONS: Array<TimeUnitOption> = [
-  { value: "day", label: "day" },
-  { value: "week", label: "week" },
-  { value: "month", label: "month" },
-  { value: "year", label: "year" }
+const TIME_SPENT_UNIT_OPTIONS = [
+  MINUTE_OPTION,
+  HOUR_OPTION,
+  DAY_OPTION,
+  WEEK_OPTION,
+  MONTH_OPTION,
+  YEAR_OPTION
 ];
-const DEFAULT_TASK_LIFETIME_UNIT = TASK_LIFETIME_UNIT_OPTIONS[1].value;
+
+const TIME_SHAVED_UNIT_OPTIONS = [
+  SECOND_OPTION,
+  MINUTE_OPTION,
+  HOUR_OPTION,
+  DAY_OPTION,
+  WEEK_OPTION,
+  MONTH_OPTION
+];
+
+const TASK_LIFETIME_UNIT_OPTIONS = [
+  DAY_OPTION,
+  WEEK_OPTION,
+  MONTH_OPTION,
+  YEAR_OPTION
+];
 
 const TASK_FREQUENCY_UNIT_OPTIONS: Array<{
   value: FrequencyUnit;
@@ -97,7 +110,6 @@ const TASK_FREQUENCY_UNIT_OPTIONS: Array<{
   { value: "monthly", label: "a month" },
   { value: "yearly", label: "a year" }
 ];
-const DEFAULT_TASK_FREQUENCY_UNIT = TASK_FREQUENCY_UNIT_OPTIONS[0].value;
 
 type UnitValue<U, V> = {
   value: V;
@@ -142,13 +154,15 @@ function toUnitValue<U, V>(unitValueState: {
 }
 
 const App: React.FC = () => {
-  const timeSpent = useUnitValueState(1, DEFAULT_TIME_SPENT_UNIT);
-  const timeShaved = useUnitValueState(1, DEFAULT_TIME_SHAVED_UNIT);
-  const taskLifetime = useUnitValueState(2, DEFAULT_TASK_LIFETIME_UNIT);
-  const taskFrequency = useUnitValueState(10, DEFAULT_TASK_FREQUENCY_UNIT);
+  const taskDuration = useUnitValueState(3, "minute" as TimeUnit);
+  const timeSpent = useUnitValueState(1, "day" as TimeUnit);
+  const timeShaved = useUnitValueState(1, "minute" as TimeUnit);
+  const taskFrequency = useUnitValueState(5, "daily" as FrequencyUnit);
+  const taskLifetime = useUnitValueState(1, "year" as TimeUnit);
   const [daysPerWeek, setDaysPerWeek] = React.useState<number | null>(5);
 
   const canComputeResult = [
+    taskDuration,
     timeShaved,
     timeShaved,
     taskLifetime,
@@ -157,57 +171,73 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
+      <h1>I have a recurring task...</h1>
       <div>
-        {"If I spend "}
-        <NumberInput
-          value={timeSpent.value.current}
-          onChange={timeSpent.value.set}
-        />
-        <Select
-          value={timeSpent.unit.current}
-          onChange={timeSpent.unit.set}
-          options={TIME_SPENT_UNIT_OPTIONS}
-        />
-        <br />
-        {" I can shave off "}
-        <NumberInput
-          value={timeShaved.value.current}
-          onChange={timeShaved.value.set}
-        />
-        <Select
-          value={timeShaved.unit.current}
-          onChange={timeShaved.unit.set}
-          options={TIME_SHAVED_UNIT_OPTIONS}
-        />
-        <br />
-        {" of a task that I will do "}
-        <NumberInput
-          value={taskFrequency.value.current}
-          onChange={taskFrequency.value.set}
-        />
-        {" times "}
-        <Select
-          value={taskFrequency.unit.current}
-          onChange={taskFrequency.unit.set}
-          options={TASK_FREQUENCY_UNIT_OPTIONS}
-        />
-        <br />
-        {" for "}
-        <NumberInput
-          value={taskLifetime.value.current}
-          onChange={taskLifetime.value.set}
-        />
-        <Select
-          value={taskLifetime.unit.current}
-          onChange={taskLifetime.unit.set}
-          options={TASK_LIFETIME_UNIT_OPTIONS}
-        />
+        <p>
+          {"that takes "}
+          <NumberInput
+            value={taskDuration.value.current}
+            onChange={taskDuration.value.set}
+          />
+          <Select
+            value={taskDuration.unit.current}
+            onChange={taskDuration.unit.set}
+            options={TASK_DURATION_UNIT_OPTIONS}
+          />
+          <br />
+          {"that I will do "}
+          <NumberInput
+            value={taskFrequency.value.current}
+            onChange={taskFrequency.value.set}
+          />
+          {" times "}
+          <Select
+            value={taskFrequency.unit.current}
+            onChange={taskFrequency.unit.set}
+            options={TASK_FREQUENCY_UNIT_OPTIONS}
+          />
+          <br />
+          {" for "}
+          <NumberInput
+            value={taskLifetime.value.current}
+            onChange={taskLifetime.value.set}
+          />
+          <Select
+            value={taskLifetime.unit.current}
+            onChange={taskLifetime.unit.set}
+            options={TASK_LIFETIME_UNIT_OPTIONS}
+          />
+        </p>
+        <p>
+          {"If I spent "}
+          <NumberInput
+            value={timeSpent.value.current}
+            onChange={timeSpent.value.set}
+          />
+          <Select
+            value={timeSpent.unit.current}
+            onChange={timeSpent.unit.set}
+            options={TIME_SPENT_UNIT_OPTIONS}
+          />
+          <br />
+          {" I could shorten that task by "}
+          <NumberInput
+            value={timeShaved.value.current}
+            onChange={timeShaved.value.set}
+          />
+          <Select
+            value={timeShaved.unit.current}
+            onChange={timeShaved.unit.set}
+            options={TIME_SHAVED_UNIT_OPTIONS}
+          />
+        </p>
       </div>
 
       {/* TODO; Add advanced panel to define number of worked hours in a day and worked days in a week ? */}
 
       {canComputeResult && (
         <Result
+          taskDuration={toUnitValue(taskDuration)}
           timeSpent={toUnitValue(timeSpent)}
           timeShaved={toUnitValue(timeShaved)}
           taskFrequency={toUnitValue(taskFrequency)}
@@ -260,37 +290,40 @@ function normalizeFrequency({
 }
 
 const Result: React.FC<{
+  taskDuration: UnitValue<TimeUnit, number>;
   timeSpent: UnitValue<TimeUnit, number>;
   timeShaved: UnitValue<TimeUnit, number>;
   taskFrequency: UnitValue<FrequencyUnit, number>;
   taskLifetime: UnitValue<TimeUnit, number>;
-}> = () => {
-  // Values normalized for seconds
-  const nTimeSpent: number = 0; // seconds
-  const nTimeShaved: number = 0; // seconds
-  const nTaskFrequency: number = 0; // per second
-  const nTaskLifetime: number = 0; // seconds
+}> = ({ taskDuration, timeShaved, timeSpent, taskFrequency, taskLifetime }) => {
+  // Values normalized to seconds
+  const nTimeSpent: number = normalizeTime(timeSpent);
+  const nTimeShaved: number = normalizeTime(timeShaved);
+  const nTaskDuration: number = normalizeTime(taskDuration);
+  const nTaskLifetime: number = normalizeTime(taskLifetime);
+  const nTaskFrequency: number = normalizeFrequency(taskFrequency); // per second
 
-  const dailyTime = 0;
-  const initialTaskTime = 0;
-  const optimizedTaskTime = 0;
-  const gainRatio = 0;
-  const timeSaved = 30;
+  const initialTaskTime = nTaskDuration * nTaskFrequency * nTaskLifetime;
+  const optimizedTaskTime =
+    Math.max(0, nTaskDuration - nTimeShaved) * nTaskFrequency * nTaskLifetime;
+
+  const timeSaved = nTimeShaved * nTaskLifetime * nTaskFrequency;
   const worthIt = timeSaved > nTimeSpent;
+  const gainRatio =
+    nTimeSpent === 0 ? "Infinite" : ((timeSaved / nTimeSpent) * 100).toFixed(0);
 
   return (
     <div>
+      <h1>Would it be worth the time ?</h1>
+      <div>{worthIt ? "YES!" : "Nope..."}</div>
+      <div>Time spent: {nTimeSpent} seconds</div>
+      <div>Time saved: {timeSaved} seconds</div>
+      <div>Efficiency factor: {gainRatio}%</div>
+
+      <div>Total time cost of the task: {initialTaskTime}</div>
       <div>
-        <b>Is it worth it?</b>
+        Total time cost of the task, after optimization: {optimizedTaskTime}
       </div>
-      <div>{worthIt ? "Yes" : "No"}</div>
-      <div>Average time for the task per day: {dailyTime}</div>
-      <div>Total time for the future task: {initialTaskTime}</div>
-      <div>
-        Total time for the future task, after optimization: {optimizedTaskTime}
-      </div>
-      <div>Time saved: {timeSaved}</div>
-      <div>Time gain ratio: {gainRatio}</div>
     </div>
   );
 };
