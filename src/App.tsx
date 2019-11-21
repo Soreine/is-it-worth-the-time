@@ -142,7 +142,7 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <div>
-        {"By spending "}
+        {"If I spend "}
         <NumberInput
           value={timeSpent.value.current}
           onChange={timeSpent.value.set}
@@ -152,7 +152,8 @@ const App: React.FC = () => {
           onChange={timeSpent.unit.set}
           options={TIME_SPENT_UNIT_OPTIONS}
         />
-        {" to shave off "}
+        <br />
+        {" I can shave off "}
         <NumberInput
           value={timeShaved.value.current}
           onChange={timeShaved.value.set}
@@ -163,18 +164,7 @@ const App: React.FC = () => {
           options={TIME_SHAVED_UNIT_OPTIONS}
         />
         <br />
-        {" of a task that I will do for "}
-        <NumberInput
-          value={taskLifetime.value.current}
-          onChange={taskLifetime.value.set}
-        />
-        <Select
-          value={taskLifetime.unit.current}
-          onChange={taskLifetime.unit.set}
-          options={TASK_LIFETIME_UNIT_OPTIONS}
-        />
-        {", "}
-        <br />
+        {" of a task that I will do "}
         <NumberInput
           value={taskFrequency.value.current}
           onChange={taskFrequency.value.set}
@@ -185,10 +175,21 @@ const App: React.FC = () => {
           onChange={taskFrequency.unit.set}
           options={TASK_FREQUENCY_UNIT_OPTIONS}
         />
+        {", "}
         <br />
-        {" and "}
         <NumberInput value={daysPerWeek} onChange={setDaysPerWeek} />
-        {" days per week."}
+        {" days per week,"}
+        <br />
+        {" for "}
+        <NumberInput
+          value={taskLifetime.value.current}
+          onChange={taskLifetime.value.set}
+        />
+        <Select
+          value={taskLifetime.unit.current}
+          onChange={taskLifetime.unit.set}
+          options={TASK_LIFETIME_UNIT_OPTIONS}
+        />
       </div>
       <div>
         <b>Is it worth it?</b>
