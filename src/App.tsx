@@ -248,25 +248,41 @@ const App: React.FC = () => {
   );
 };
 
-function normalizeTime({ value, unit }: UnitValue<TimeUnit, number>): number {
+const SECONDS_IN_MINUTE = 60;
+const MINUTES_IN_HOUR = 60;
+const HOURS_IN_DAY = 7; // worked hours per day
+const DAYS_IN_WEEK = 5; // worked days per week
+const DAYS_IN_MONTH = 21; // worked days per month
+const MONTHS_IN_YEAR = 12;
+
+function normalizeDuration({
+  value,
+  unit
+}: UnitValue<TimeUnit, number>): number {
   switch (unit) {
     case "second":
       return value;
     case "minute":
-      return normalizeTime({ value: value * 60, unit: "second" });
+      return normalizeDuration({
+        value: value * SECONDS_IN_MINUTE,
+        unit: "second"
+      });
     case "hour":
-      return normalizeTime({ value: value * 60, unit: "minute" });
+      return normalizeDuration({
+        value: value * MINUTES_IN_HOUR,
+        unit: "minute"
+      });
     case "day":
-      // 7 work hours in a day
-      return normalizeTime({ value: value * 7, unit: "hour" });
+      return normalizeDuration({ value: value * HOURS_IN_DAY, unit: "hour" });
     case "week":
-      // 5 work days in a week
-      return normalizeTime({ value: value * 5, unit: "day" });
+      return normalizeDuration({ value: value * DAYS_IN_WEEK, unit: "day" });
     case "month":
-      // 21 work days in a month on average
-      return normalizeTime({ value: value * 21, unit: "day" });
+      return normalizeDuration({ value: value * DAYS_IN_MONTH, unit: "day" });
     case "year":
-      return normalizeTime({ value: value * 12, unit: "month" });
+      return normalizeDuration({
+        value: value * MONTHS_IN_YEAR,
+        unit: "month"
+      });
   }
 }
 
@@ -276,17 +292,73 @@ function normalizeFrequency({
 }: UnitValue<FrequencyUnit, number>): number {
   switch (unit) {
     case "daily":
-      // 7 work hours in a day
-      return value / (7 * 60 * 60);
+      return value / (SECONDS_IN_MINUTE * MINUTES_IN_HOUR * HOURS_IN_DAY);
     case "weekly":
-      // 5 work days in a week
-      return normalizeFrequency({ value: value / 5, unit: "daily" });
+      return normalizeFrequency({ value: value / DAYS_IN_WEEK, unit: "daily" });
     case "monthly":
-      // 21 work days in a month on average
-      return normalizeFrequency({ value: value / 21, unit: "daily" });
+      return normalizeFrequency({
+        value: value / DAYS_IN_MONTH,
+        unit: "daily"
+      });
     case "yearly":
-      return normalizeFrequency({ value: value / 12, unit: "monthly" });
+      return normalizeFrequency({
+        value: value / MONTHS_IN_YEAR,
+        unit: "monthly"
+      });
   }
+}
+
+const SECOND: UnitValue<TimeUnit, number> = { value: 1, unit: "second" };
+const MINUTE: UnitValue<TimeUnit, number> = { value: 1, unit: "minute" };
+const HOUR: UnitValue<TimeUnit, number> = { value: 1, unit: "hour" };
+const DAY: UnitValue<TimeUnit, number> = { value: 1, unit: "day" };
+const WEEK: UnitValue<TimeUnit, number> = { value: 1, unit: "week" };
+const MONTH: UnitValue<TimeUnit, number> = { value: 1, unit: "month" };
+const YEAR: UnitValue<TimeUnit, number> = { value: 1, unit: "year" };
+
+function decomposeDuration(
+  duration: number, // seconds
+  precision: number // percentage of precision, for simpler decomposition
+): Array<UnitValue<TimeUnit, number>> {
+  if (precision >= 1) {
+    // 0 is a good approximation at +/- 100%
+    return [];
+  }
+
+  const highestMagnitude = [YEAR, MONTH, WEEK, DAY, HOUR, MINUTE, SECOND].find(
+    magnitude => duration >= normalizeDuration(magnitude)
+  );
+
+  if (!highestMagnitude) {
+    // Less than one second
+    return [];
+  }
+
+  const magnitudeDuration = normalizeDuration(highestMagnitude);
+  const magnitudeNumber = Math.floor(duration / magnitudeDuration);
+  const restDuration = duration - magnitudeNumber * magnitudeDuration;
+
+  let rest: Array<UnitValue<TimeUnit, number>>;
+  if (restDuration <= 0) {
+    // Nothing left to decompose
+    rest = [];
+  } else {
+    const restPrecision = (precision * duration) / restDuration;
+    rest = decomposeDuration(restDuration, restPrecision);
+  }
+
+  return [{ ...highestMagnitude, value: magnitudeNumber }, ...rest];
+}
+/**
+ * Return a human readable string to represent a duration, using given precision
+ */
+function formatDuration(
+  duration: number, // seconds
+  precision: number = 0.05 // percentage, for simpler representation. Default 5%
+) {
+  const decomposition = decomposeDuration(duration, precision);
+  // Format the decomposition as a string
+  return decomposition.map(({ value, unit }) => `${value} ${unit}`).join(", ");
 }
 
 const Result: React.FC<{
@@ -297,10 +369,10 @@ const Result: React.FC<{
   taskLifetime: UnitValue<TimeUnit, number>;
 }> = ({ taskDuration, timeShaved, timeSpent, taskFrequency, taskLifetime }) => {
   // Values normalized to seconds
-  const nTimeSpent: number = normalizeTime(timeSpent);
-  const nTimeShaved: number = normalizeTime(timeShaved);
-  const nTaskDuration: number = normalizeTime(taskDuration);
-  const nTaskLifetime: number = normalizeTime(taskLifetime);
+  const nTimeSpent: number = normalizeDuration(timeSpent);
+  const nTimeShaved: number = normalizeDuration(timeShaved);
+  const nTaskDuration: number = normalizeDuration(taskDuration);
+  const nTaskLifetime: number = normalizeDuration(taskLifetime);
   const nTaskFrequency: number = normalizeFrequency(taskFrequency); // per second
 
   const initialTaskTime = nTaskDuration * nTaskFrequency * nTaskLifetime;
@@ -315,14 +387,15 @@ const Result: React.FC<{
   return (
     <div>
       <h1>Would it be worth the time ?</h1>
-      <div>{worthIt ? "YES!" : "Nope..."}</div>
-      <div>Time spent: {nTimeSpent} seconds</div>
-      <div>Time saved: {timeSaved} seconds</div>
+      <div>{worthIt ? "YES!" : "No..."}</div>
+      <div>Time spent: {formatDuration(nTimeSpent)}</div>
+      <div>Time saved: {formatDuration(timeSaved)}</div>
       <div>Efficiency factor: {gainRatio}%</div>
 
-      <div>Total time cost of the task: {initialTaskTime}</div>
+      <div>Total time cost of the task: {formatDuration(initialTaskTime)}</div>
       <div>
-        Total time cost of the task, after optimization: {optimizedTaskTime}
+        Total time cost of the task, after optimization:{" "}
+        {formatDuration(optimizedTaskTime)}
       </div>
     </div>
   );
