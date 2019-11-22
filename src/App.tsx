@@ -11,10 +11,12 @@ import {
   isItWorthIt
 } from "./time";
 
+type Option<T> = { value: T; label: string };
+
 class Select<T extends string> extends React.Component<{
   value: T;
   onChange: (newValue: T) => void;
-  options: Array<{ value: T; label: string }>;
+  options: Array<Option<T>>;
 }> {
   render(): React.ReactNode {
     const { onChange, options, value } = this.props;
@@ -57,15 +59,13 @@ function NumberInput(props: {
   );
 }
 
-type TimeUnitOption = { value: TimeUnit; label: string };
-
-const SECOND_OPTION: TimeUnitOption = { value: "second", label: "second" };
-const MINUTE_OPTION: TimeUnitOption = { value: "minute", label: "minute" };
-const HOUR_OPTION: TimeUnitOption = { value: "hour", label: "hour" };
-const DAY_OPTION: TimeUnitOption = { value: "day", label: "day" };
-const WEEK_OPTION: TimeUnitOption = { value: "week", label: "week" };
-const MONTH_OPTION: TimeUnitOption = { value: "month", label: "month" };
-const YEAR_OPTION: TimeUnitOption = { value: "year", label: "year" };
+const SECOND_OPTION: Option<TimeUnit> = { value: "second", label: "second" };
+const MINUTE_OPTION: Option<TimeUnit> = { value: "minute", label: "minute" };
+const HOUR_OPTION: Option<TimeUnit> = { value: "hour", label: "hour" };
+const DAY_OPTION: Option<TimeUnit> = { value: "day", label: "day" };
+const WEEK_OPTION: Option<TimeUnit> = { value: "week", label: "week" };
+const MONTH_OPTION: Option<TimeUnit> = { value: "month", label: "month" };
+const YEAR_OPTION: Option<TimeUnit> = { value: "year", label: "year" };
 
 const TASK_DURATION_UNIT_OPTIONS = [
   MINUTE_OPTION,
