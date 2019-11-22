@@ -149,10 +149,10 @@ function toUnitValue<U, V>(unitValueState: {
 
 const App: React.FC = () => {
   const taskDuration = useUnitValueState(3, "minute" as TimeUnit);
-  const timeSpent = useUnitValueState(1, "day" as TimeUnit);
-  const timeShaved = useUnitValueState(1, "minute" as TimeUnit);
-  const taskFrequency = useUnitValueState(5, "daily" as FrequencyUnit);
-  const taskLifetime = useUnitValueState(1, "year" as TimeUnit);
+  const timeSpent = useUnitValueState(1, "hour" as TimeUnit);
+  const timeShaved = useUnitValueState(2, "minute" as TimeUnit);
+  const taskFrequency = useUnitValueState(10, "daily" as FrequencyUnit);
+  const taskLifetime = useUnitValueState(1, "month" as TimeUnit);
 
   const canComputeResult = [
     taskDuration,
@@ -253,7 +253,7 @@ const Result: React.FC<{
     timeSaved,
     initialTaskTime,
     optimizedTaskTime,
-    gainRatio
+    efficiencyFactor
   } = isItWorthIt(
     taskDuration,
     taskFrequency,
@@ -269,13 +269,13 @@ const Result: React.FC<{
       <div>Time spent: {formatDuration(timeSpent)}</div>
       <div>Time saved: {formatDuration(timeSaved)}</div>
       <div>
-        Efficiency factor: {gainRatio === Infinity ? "∞" : gainRatio.toFixed(0)}
-        %
+        Efficiency factor:{" "}
+        {efficiencyFactor === Infinity ? "∞" : efficiencyFactor.toFixed(0)}%
       </div>
 
-      <div>Total time cost of the task: {formatDuration(initialTaskTime)}</div>
+      <div>Total time of the task: {formatDuration(initialTaskTime)}</div>
       <div>
-        Total time cost of the task, after optimization:{" "}
+        Total time of the task, after optimization:{" "}
         {formatDuration(optimizedTaskTime)}
       </div>
     </div>

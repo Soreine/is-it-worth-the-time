@@ -126,7 +126,7 @@ describe("isItWorthIt", () => {
     const optimizedTaskTime =
       (taskDuration - timeShaved) * taskLifetime * taskFrequency;
     const timeSaved = initialTaskTime - optimizedTaskTime;
-    const gainRatio = (timeSaved / timeSpent) * 100;
+    const efficiencyFactor = (timeSaved / timeSpent) * 100;
 
     const worthIt = true;
 
@@ -143,7 +143,7 @@ describe("isItWorthIt", () => {
       timeSaved,
       initialTaskTime,
       optimizedTaskTime,
-      gainRatio
+      efficiencyFactor
     });
   });
 
@@ -167,7 +167,7 @@ describe("isItWorthIt", () => {
       timeSaved: 226800,
       initialTaskTime: 226800,
       optimizedTaskTime: 0,
-      gainRatio: 900
+      efficiencyFactor: 900
     });
   });
 });
