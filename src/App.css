@@ -1,9 +1,12 @@
+@import url("https://fonts.googleapis.com/css?family=Gloria+Hallelujah&display=swap");
+
 .App {
   text-align: left;
   font-size: 24px;
   line-height: 1.7em;
   max-width: 800px;
   margin: auto;
+  font-family: "Gloria Hallelujah", cursive;
 }
 
 input {
@@ -12,6 +15,7 @@ input {
   border-bottom: 2px solid;
   font-weight: bold;
   font-size: 24px;
+  font-family: "Gloria Hallelujah", cursive;
 }
 
 select {
@@ -21,6 +25,7 @@ select {
   -moz-appearance: none;
   appearance: none;
   border-bottom: 2px solid;
+  font-family: "Gloria Hallelujah", cursive;
   font-weight: bold;
   font-size: 24px;
 }
