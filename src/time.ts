@@ -83,6 +83,9 @@ function normalizeFrequency({
   }
 }
 
+/**
+ * Decompose a duration in a sum of days, weeks, months...
+ */
 function decomposeDuration(
   duration: number, // seconds
   precision: number // percentage of precision, for simpler decomposition
@@ -116,12 +119,13 @@ function decomposeDuration(
 
   return [{ ...highestMagnitude, value: magnitudeNumber }, ...rest];
 }
+
 /**
  * Return a human readable string to represent a duration, using given precision
  */
 function formatDuration(
   duration: number, // seconds
-  precision: number = 0.05 // percentage, for simpler representation. Default 5%
+  precision: number = 0.01 // percentage, for simpler representation. Default 1%
 ) {
   const decomposition = decomposeDuration(duration, precision);
   // Format the decomposition as a string
@@ -152,4 +156,16 @@ function isItWorthIt(
   };
 }
 
-export { isItWorthIt, formatDuration, normalizeDuration, normalizeFrequency };
+export {
+  isItWorthIt,
+  decomposeDuration,
+  formatDuration,
+  normalizeDuration,
+  normalizeFrequency,
+  SECONDS_IN_MINUTE,
+  MINUTES_IN_HOUR,
+  HOURS_IN_DAY,
+  DAYS_IN_WEEK,
+  DAYS_IN_MONTH,
+  MONTHS_IN_YEAR
+};
