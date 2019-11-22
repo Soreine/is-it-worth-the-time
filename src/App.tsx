@@ -1,5 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import "./App.css";
+
+import {
+  FrequencyUnit,
+  TimeUnit,
+  UnitValue,
+  normalizeDuration,
+  normalizeFrequency,
+  formatDuration,
+  isItWorthIt
+} from "./time";
 
 class Select<T extends string> extends React.Component<{
   value: T;
@@ -46,17 +56,6 @@ function NumberInput(props: {
     />
   );
 }
-
-type TimeUnit =
-  | "second"
-  | "minute"
-  | "hour"
-  | "day"
-  | "week"
-  | "month"
-  | "year";
-
-type FrequencyUnit = "daily" | "weekly" | "monthly" | "yearly";
 
 type TimeUnitOption = { value: TimeUnit; label: string };
 
@@ -111,11 +110,6 @@ const TASK_FREQUENCY_UNIT_OPTIONS: Array<{
   { value: "yearly", label: "a year" }
 ];
 
-type UnitValue<U, V> = {
-  value: V;
-  unit: U;
-};
-
 function useUnitValueState<U, V>(defaultValue: V, defaultUnit: U) {
   const [value, setValue] = React.useState<V | null>(defaultValue);
   const [unit, setUnit] = React.useState<U>(defaultUnit);
@@ -143,7 +137,7 @@ function toUnitValue<U, V>(unitValueState: {
   unit: {
     current: U;
   };
-}) {
+}): UnitValue<U, V> {
   if (unitValueState.value.current === null) {
     throw new Error("Cannot work with null values");
   }
@@ -159,7 +153,6 @@ const App: React.FC = () => {
   const timeShaved = useUnitValueState(1, "minute" as TimeUnit);
   const taskFrequency = useUnitValueState(5, "daily" as FrequencyUnit);
   const taskLifetime = useUnitValueState(1, "year" as TimeUnit);
-  const [daysPerWeek, setDaysPerWeek] = React.useState<number | null>(5);
 
   const canComputeResult = [
     taskDuration,
@@ -237,160 +230,48 @@ const App: React.FC = () => {
 
       {canComputeResult && (
         <Result
-          taskDuration={toUnitValue(taskDuration)}
-          timeSpent={toUnitValue(timeSpent)}
-          timeShaved={toUnitValue(timeShaved)}
-          taskFrequency={toUnitValue(taskFrequency)}
-          taskLifetime={toUnitValue(taskLifetime)}
+          taskDuration={normalizeDuration(toUnitValue(taskDuration))}
+          timeSpent={normalizeDuration(toUnitValue(timeSpent))}
+          timeShaved={normalizeDuration(toUnitValue(timeShaved))}
+          taskFrequency={normalizeFrequency(toUnitValue(taskFrequency))}
+          taskLifetime={normalizeDuration(toUnitValue(taskLifetime))}
         />
       )}
     </div>
   );
 };
 
-const SECONDS_IN_MINUTE = 60;
-const MINUTES_IN_HOUR = 60;
-const HOURS_IN_DAY = 7; // worked hours per day
-const DAYS_IN_WEEK = 5; // worked days per week
-const DAYS_IN_MONTH = 21; // worked days per month
-const MONTHS_IN_YEAR = 12;
-
-function normalizeDuration({
-  value,
-  unit
-}: UnitValue<TimeUnit, number>): number {
-  switch (unit) {
-    case "second":
-      return value;
-    case "minute":
-      return normalizeDuration({
-        value: value * SECONDS_IN_MINUTE,
-        unit: "second"
-      });
-    case "hour":
-      return normalizeDuration({
-        value: value * MINUTES_IN_HOUR,
-        unit: "minute"
-      });
-    case "day":
-      return normalizeDuration({ value: value * HOURS_IN_DAY, unit: "hour" });
-    case "week":
-      return normalizeDuration({ value: value * DAYS_IN_WEEK, unit: "day" });
-    case "month":
-      return normalizeDuration({ value: value * DAYS_IN_MONTH, unit: "day" });
-    case "year":
-      return normalizeDuration({
-        value: value * MONTHS_IN_YEAR,
-        unit: "month"
-      });
-  }
-}
-
-function normalizeFrequency({
-  value,
-  unit
-}: UnitValue<FrequencyUnit, number>): number {
-  switch (unit) {
-    case "daily":
-      return value / (SECONDS_IN_MINUTE * MINUTES_IN_HOUR * HOURS_IN_DAY);
-    case "weekly":
-      return normalizeFrequency({ value: value / DAYS_IN_WEEK, unit: "daily" });
-    case "monthly":
-      return normalizeFrequency({
-        value: value / DAYS_IN_MONTH,
-        unit: "daily"
-      });
-    case "yearly":
-      return normalizeFrequency({
-        value: value / MONTHS_IN_YEAR,
-        unit: "monthly"
-      });
-  }
-}
-
-const SECOND: UnitValue<TimeUnit, number> = { value: 1, unit: "second" };
-const MINUTE: UnitValue<TimeUnit, number> = { value: 1, unit: "minute" };
-const HOUR: UnitValue<TimeUnit, number> = { value: 1, unit: "hour" };
-const DAY: UnitValue<TimeUnit, number> = { value: 1, unit: "day" };
-const WEEK: UnitValue<TimeUnit, number> = { value: 1, unit: "week" };
-const MONTH: UnitValue<TimeUnit, number> = { value: 1, unit: "month" };
-const YEAR: UnitValue<TimeUnit, number> = { value: 1, unit: "year" };
-
-function decomposeDuration(
-  duration: number, // seconds
-  precision: number // percentage of precision, for simpler decomposition
-): Array<UnitValue<TimeUnit, number>> {
-  if (precision >= 1) {
-    // 0 is a good approximation at +/- 100%
-    return [];
-  }
-
-  const highestMagnitude = [YEAR, MONTH, WEEK, DAY, HOUR, MINUTE, SECOND].find(
-    magnitude => duration >= normalizeDuration(magnitude)
-  );
-
-  if (!highestMagnitude) {
-    // Less than one second
-    return [];
-  }
-
-  const magnitudeDuration = normalizeDuration(highestMagnitude);
-  const magnitudeNumber = Math.floor(duration / magnitudeDuration);
-  const restDuration = duration - magnitudeNumber * magnitudeDuration;
-
-  let rest: Array<UnitValue<TimeUnit, number>>;
-  if (restDuration <= 0) {
-    // Nothing left to decompose
-    rest = [];
-  } else {
-    const restPrecision = (precision * duration) / restDuration;
-    rest = decomposeDuration(restDuration, restPrecision);
-  }
-
-  return [{ ...highestMagnitude, value: magnitudeNumber }, ...rest];
-}
-/**
- * Return a human readable string to represent a duration, using given precision
- */
-function formatDuration(
-  duration: number, // seconds
-  precision: number = 0.05 // percentage, for simpler representation. Default 5%
-) {
-  const decomposition = decomposeDuration(duration, precision);
-  // Format the decomposition as a string
-  return decomposition.map(({ value, unit }) => `${value} ${unit}`).join(", ");
-}
-
 const Result: React.FC<{
-  taskDuration: UnitValue<TimeUnit, number>;
-  timeSpent: UnitValue<TimeUnit, number>;
-  timeShaved: UnitValue<TimeUnit, number>;
-  taskFrequency: UnitValue<FrequencyUnit, number>;
-  taskLifetime: UnitValue<TimeUnit, number>;
+  taskDuration: number;
+  timeSpent: number;
+  timeShaved: number;
+  taskFrequency: number;
+  taskLifetime: number;
 }> = ({ taskDuration, timeShaved, timeSpent, taskFrequency, taskLifetime }) => {
-  // Values normalized to seconds
-  const nTimeSpent: number = normalizeDuration(timeSpent);
-  const nTimeShaved: number = normalizeDuration(timeShaved);
-  const nTaskDuration: number = normalizeDuration(taskDuration);
-  const nTaskLifetime: number = normalizeDuration(taskLifetime);
-  const nTaskFrequency: number = normalizeFrequency(taskFrequency); // per second
-
-  const initialTaskTime = nTaskDuration * nTaskFrequency * nTaskLifetime;
-  const optimizedTaskTime =
-    Math.max(0, nTaskDuration - nTimeShaved) * nTaskFrequency * nTaskLifetime;
-
-  const timeSaved = nTimeShaved * nTaskLifetime * nTaskFrequency;
-  const worthIt = timeSaved > nTimeSpent;
-  const gainRatio =
-    nTimeSpent === 0 ? "Infinite" : ((timeSaved / nTimeSpent) * 100).toFixed(0);
+  const {
+    worthIt,
+    timeSaved,
+    initialTaskTime,
+    optimizedTaskTime,
+    gainRatio
+  } = isItWorthIt(
+    taskDuration,
+    taskFrequency,
+    taskLifetime,
+    timeShaved,
+    timeSpent
+  );
 
   return (
     <div>
       <h1>Would it be worth the time ?</h1>
       <div>{worthIt ? "YES!" : "No..."}</div>
-      <div>Time spent: {formatDuration(nTimeSpent)}</div>
+      <div>Time spent: {formatDuration(timeSpent)}</div>
       <div>Time saved: {formatDuration(timeSaved)}</div>
-      <div>Efficiency factor: {gainRatio}%</div>
+      <div>
+        Efficiency factor: {gainRatio === Infinity ? "∞" : gainRatio.toFixed(0)}
+        %
+      </div>
 
       <div>Total time cost of the task: {formatDuration(initialTaskTime)}</div>
       <div>
