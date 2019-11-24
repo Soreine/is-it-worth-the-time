@@ -1,4 +1,5 @@
 import React from "react";
+import plur from "plur";
 import "./App.css";
 
 import {
@@ -147,6 +148,17 @@ function toUnitValue<U, V>(unitValueState: {
   };
 }
 
+function pluralizeOptions<T>(
+  options: Array<Option<T>>,
+  n: number | null
+): Array<Option<T>> {
+  if (n === null) {
+    return options;
+  }
+
+  return options.map(o => ({ ...o, label: plur(o.label, n) }));
+}
+
 const App: React.FC = () => {
   const taskDuration = useUnitValueState(3, "minute" as TimeUnit);
   const timeSpent = useUnitValueState(1, "hour" as TimeUnit);
@@ -175,7 +187,10 @@ const App: React.FC = () => {
           <Select
             value={taskDuration.unit.current}
             onChange={taskDuration.unit.set}
-            options={TASK_DURATION_UNIT_OPTIONS}
+            options={pluralizeOptions(
+              TASK_DURATION_UNIT_OPTIONS,
+              taskDuration.value.current
+            )}
           />
           <br />
           {"that I will do "}
@@ -183,7 +198,12 @@ const App: React.FC = () => {
             value={taskFrequency.value.current}
             onChange={taskFrequency.value.set}
           />
-          {" times "}
+          {` ${plur(
+            "time",
+            taskFrequency.value.current === null
+              ? undefined
+              : taskFrequency.value.current
+          )} `}
           <Select
             value={taskFrequency.unit.current}
             onChange={taskFrequency.unit.set}
@@ -198,7 +218,10 @@ const App: React.FC = () => {
           <Select
             value={taskLifetime.unit.current}
             onChange={taskLifetime.unit.set}
-            options={TASK_LIFETIME_UNIT_OPTIONS}
+            options={pluralizeOptions(
+              TASK_LIFETIME_UNIT_OPTIONS,
+              taskLifetime.value.current
+            )}
           />
         </p>
         <p>
@@ -210,7 +233,10 @@ const App: React.FC = () => {
           <Select
             value={timeSpent.unit.current}
             onChange={timeSpent.unit.set}
-            options={TIME_SPENT_UNIT_OPTIONS}
+            options={pluralizeOptions(
+              TIME_SPENT_UNIT_OPTIONS,
+              timeSpent.value.current
+            )}
           />
           <br />
           {" I could shorten that task by "}
@@ -221,7 +247,10 @@ const App: React.FC = () => {
           <Select
             value={timeShaved.unit.current}
             onChange={timeShaved.unit.set}
-            options={TIME_SHAVED_UNIT_OPTIONS}
+            options={pluralizeOptions(
+              TIME_SHAVED_UNIT_OPTIONS,
+              timeShaved.value.current
+            )}
           />
         </p>
       </div>

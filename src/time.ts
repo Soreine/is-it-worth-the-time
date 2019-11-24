@@ -1,3 +1,5 @@
+import plur from "plur";
+
 export type TimeUnit =
   | "second"
   | "minute"
@@ -128,8 +130,15 @@ function formatDuration(
   precision: number = 0.01 // percentage, for simpler representation. Default 1%
 ) {
   const decomposition = decomposeDuration(duration, precision);
+
+  if (decomposition.length === 0) {
+    return "0 seconds";
+  }
+
   // Format the decomposition as a string
-  return decomposition.map(({ value, unit }) => `${value} ${unit}`).join(", ");
+  return decomposition
+    .map(({ value, unit }) => `${value} ${plur(unit, value)}`)
+    .join(", ");
 }
 
 function isItWorthIt(
