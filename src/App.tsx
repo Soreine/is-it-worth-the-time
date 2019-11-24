@@ -311,22 +311,24 @@ const Result: React.FC<{
   );
 
   return (
-    <div>
+    <>
       <h1>Would it be worth the time ?</h1>
-      <div>{worthIt ? "YES!" : "No..."}</div>
-      <div>Time spent: {formatDuration(timeSpent)}</div>
-      <div>Time saved: {formatDuration(timeSaved)}</div>
-      <div>
-        Efficiency factor:{" "}
-        {efficiencyFactor === Infinity ? "∞" : efficiencyFactor.toFixed(0)}%
-      </div>
+      <div className="answer">{worthIt ? "YES!" : "No..."}</div>
+      <div className="stats">
+        <div>Time spent: {formatDuration(timeSpent)}</div>
+        <div>Time saved: {formatDuration(timeSaved)}</div>
+        <div>
+          Efficiency factor:{" "}
+          {efficiencyFactor === Infinity ? "∞" : efficiencyFactor.toFixed(0)}%
+        </div>
 
-      <div>Total time of the task: {formatDuration(initialTaskTime)}</div>
-      <div>
-        Total time of the task, after optimization:{" "}
-        {formatDuration(optimizedTaskTime)}
+        <div>Total time of the task: {formatDuration(initialTaskTime)}</div>
+        <div>
+          Total time of the task, after optimization:{" "}
+          {formatDuration(optimizedTaskTime)}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
