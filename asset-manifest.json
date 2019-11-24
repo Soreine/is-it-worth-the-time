@@ -1,0 +1,21 @@
+{
+  "files": {
+    "main.css": "/is-it-worth-the-time/static/css/main.7c4e51a4.chunk.css",
+    "main.js": "/is-it-worth-the-time/static/js/main.1f1ddaf3.chunk.js",
+    "main.js.map": "/is-it-worth-the-time/static/js/main.1f1ddaf3.chunk.js.map",
+    "runtime-main.js": "/is-it-worth-the-time/static/js/runtime-main.2df386cd.js",
+    "runtime-main.js.map": "/is-it-worth-the-time/static/js/runtime-main.2df386cd.js.map",
+    "static/js/2.9c8f38a0.chunk.js": "/is-it-worth-the-time/static/js/2.9c8f38a0.chunk.js",
+    "static/js/2.9c8f38a0.chunk.js.map": "/is-it-worth-the-time/static/js/2.9c8f38a0.chunk.js.map",
+    "index.html": "/is-it-worth-the-time/index.html",
+    "precache-manifest.959bff99d9b26e8f441cbe4452c138f9.js": "/is-it-worth-the-time/precache-manifest.959bff99d9b26e8f441cbe4452c138f9.js",
+    "service-worker.js": "/is-it-worth-the-time/service-worker.js",
+    "static/css/main.7c4e51a4.chunk.css.map": "/is-it-worth-the-time/static/css/main.7c4e51a4.chunk.css.map"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.2df386cd.js",
+    "static/js/2.9c8f38a0.chunk.js",
+    "static/css/main.7c4e51a4.chunk.css",
+    "static/js/main.1f1ddaf3.chunk.js"
+  ]
+}
