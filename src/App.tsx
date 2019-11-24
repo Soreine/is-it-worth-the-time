@@ -23,6 +23,7 @@ class Select<T extends string> extends React.Component<{
     const { onChange, options, value } = this.props;
     return (
       <select
+        className="field"
         value={value}
         onChange={event => {
           const newValue = (event.target.value as any) as T;
@@ -45,6 +46,7 @@ function NumberInput(props: {
 }) {
   return (
     <input
+      className="field"
       type="number"
       min="0"
       value={props.value === null ? "" : props.value}
@@ -159,6 +161,15 @@ function pluralizeOptions<T>(
   return options.map(o => ({ ...o, label: plur(o.label, n) }));
 }
 
+const Line: React.FC = props => {
+  return (
+    <span className="line">
+      {props.children}
+      <br />
+    </span>
+  );
+};
+
 const App: React.FC = () => {
   const taskDuration = useUnitValueState(3, "minute" as TimeUnit);
   const timeSpent = useUnitValueState(1, "hour" as TimeUnit);
@@ -176,55 +187,62 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      <h1>I have a recurring task...</h1>
-      <div>
-        <p>
-          {"that takes "}
-          <NumberInput
-            value={taskDuration.value.current}
-            onChange={taskDuration.value.set}
-          />
-          <Select
-            value={taskDuration.unit.current}
-            onChange={taskDuration.unit.set}
-            options={pluralizeOptions(
-              TASK_DURATION_UNIT_OPTIONS,
-              taskDuration.value.current
-            )}
-          />
-          <br />
-          {"that I will do "}
-          <NumberInput
-            value={taskFrequency.value.current}
-            onChange={taskFrequency.value.set}
-          />
-          {` ${plur(
-            "time",
-            taskFrequency.value.current === null
-              ? undefined
-              : taskFrequency.value.current
-          )} `}
-          <Select
-            value={taskFrequency.unit.current}
-            onChange={taskFrequency.unit.set}
-            options={TASK_FREQUENCY_UNIT_OPTIONS}
-          />
-          <br />
-          {" for "}
-          <NumberInput
-            value={taskLifetime.value.current}
-            onChange={taskLifetime.value.set}
-          />
-          <Select
-            value={taskLifetime.unit.current}
-            onChange={taskLifetime.unit.set}
-            options={pluralizeOptions(
-              TASK_LIFETIME_UNIT_OPTIONS,
-              taskLifetime.value.current
-            )}
-          />
-        </p>
-        <p>
+      <div className="content">
+        <h1>I have a recurring task…</h1>
+        <div>
+          <Line>
+            {"… that takes "}
+            <NumberInput
+              value={taskDuration.value.current}
+              onChange={taskDuration.value.set}
+            />
+            <Select
+              value={taskDuration.unit.current}
+              onChange={taskDuration.unit.set}
+              options={pluralizeOptions(
+                TASK_DURATION_UNIT_OPTIONS,
+                taskDuration.value.current
+              )}
+            />
+            {","}
+          </Line>
+          <Line>
+            {"that I have to do "}
+            <NumberInput
+              value={taskFrequency.value.current}
+              onChange={taskFrequency.value.set}
+            />
+            <b>
+              {` ${plur(
+                "time",
+                taskFrequency.value.current === null
+                  ? undefined
+                  : taskFrequency.value.current
+              )} `}
+            </b>
+            <Select
+              value={taskFrequency.unit.current}
+              onChange={taskFrequency.unit.set}
+              options={TASK_FREQUENCY_UNIT_OPTIONS}
+            />
+          </Line>
+          <Line>
+            <b>{" for "}</b>
+            <NumberInput
+              value={taskLifetime.value.current}
+              onChange={taskLifetime.value.set}
+            />
+            <Select
+              value={taskLifetime.unit.current}
+              onChange={taskLifetime.unit.set}
+              options={pluralizeOptions(
+                TASK_LIFETIME_UNIT_OPTIONS,
+                taskLifetime.value.current
+              )}
+            />
+            {"."}
+          </Line>
+
           {"If I spent "}
           <NumberInput
             value={timeSpent.value.current}
@@ -252,20 +270,21 @@ const App: React.FC = () => {
               timeShaved.value.current
             )}
           />
-        </p>
+          {"."}
+        </div>
+
+        {/* TODO; Add advanced panel to define number of worked hours in a day and worked days in a week ? */}
+
+        {canComputeResult && (
+          <Result
+            taskDuration={normalizeDuration(toUnitValue(taskDuration))}
+            timeSpent={normalizeDuration(toUnitValue(timeSpent))}
+            timeShaved={normalizeDuration(toUnitValue(timeShaved))}
+            taskFrequency={normalizeFrequency(toUnitValue(taskFrequency))}
+            taskLifetime={normalizeDuration(toUnitValue(taskLifetime))}
+          />
+        )}
       </div>
-
-      {/* TODO; Add advanced panel to define number of worked hours in a day and worked days in a week ? */}
-
-      {canComputeResult && (
-        <Result
-          taskDuration={normalizeDuration(toUnitValue(taskDuration))}
-          timeSpent={normalizeDuration(toUnitValue(timeSpent))}
-          timeShaved={normalizeDuration(toUnitValue(timeShaved))}
-          taskFrequency={normalizeFrequency(toUnitValue(taskFrequency))}
-          taskLifetime={normalizeDuration(toUnitValue(taskLifetime))}
-        />
-      )}
     </div>
   );
 };
