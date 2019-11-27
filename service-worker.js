@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/is-it-worth-the-time/precache-manifest.959bff99d9b26e8f441cbe4452c138f9.js"
+  "/is-it-worth-the-time/precache-manifest.447c743953c7eb9a3ffca58ee4f2982a.js"
 );
 
 self.addEventListener('message', (event) => {
