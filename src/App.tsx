@@ -44,12 +44,13 @@ function NumberInput(props: {
   value: number | null;
   onChange: (newValue: number | null) => void;
 }) {
+  const invalid = props.value === null;
   return (
     <input
-      className="field"
+      className={"field " + (invalid ? "invalid" : "valid")}
       type="number"
       min="0"
-      value={props.value === null ? "" : props.value}
+      value={invalid ? "" : (props.value as number)}
       onChange={e => {
         if (!e.target.value) {
           return props.onChange(null);
@@ -190,106 +191,115 @@ const App: React.FC = () => {
       <div className="content">
         <h1>I have a recurring task…</h1>
         <div>
-          <Line>
-            {"… that takes "}
-            <NumberInput
-              value={taskDuration.value.current}
-              onChange={taskDuration.value.set}
-            />
-            <Select
-              value={taskDuration.unit.current}
-              onChange={taskDuration.unit.set}
-              options={pluralizeOptions(
-                TASK_DURATION_UNIT_OPTIONS,
-                taskDuration.value.current
-              )}
-            />
-            {","}
-          </Line>
-          <Line>
-            {"that I have to do "}
-            <NumberInput
-              value={taskFrequency.value.current}
-              onChange={taskFrequency.value.set}
-            />
-            <b>
-              {` ${plur(
-                "time",
-                taskFrequency.value.current === null
-                  ? undefined
-                  : taskFrequency.value.current
-              )} `}
-            </b>
-            <Select
-              value={taskFrequency.unit.current}
-              onChange={taskFrequency.unit.set}
-              options={TASK_FREQUENCY_UNIT_OPTIONS}
-            />
-          </Line>
-          <Line>
-            <b>{" for "}</b>
-            <NumberInput
-              value={taskLifetime.value.current}
-              onChange={taskLifetime.value.set}
-            />
-            <Select
-              value={taskLifetime.unit.current}
-              onChange={taskLifetime.unit.set}
-              options={pluralizeOptions(
-                TASK_LIFETIME_UNIT_OPTIONS,
-                taskLifetime.value.current
-              )}
-            />
-            {"."}
-          </Line>
-
-          {"If I spent "}
-          <NumberInput
-            value={timeSpent.value.current}
-            onChange={timeSpent.value.set}
-          />
-          <Select
-            value={timeSpent.unit.current}
-            onChange={timeSpent.unit.set}
-            options={pluralizeOptions(
-              TIME_SPENT_UNIT_OPTIONS,
-              timeSpent.value.current
-            )}
-          />
-          <br />
-          {" I could shorten that task by "}
-          <NumberInput
-            value={timeShaved.value.current}
-            onChange={timeShaved.value.set}
-          />
-          <Select
-            value={timeShaved.unit.current}
-            onChange={timeShaved.unit.set}
-            options={pluralizeOptions(
-              TIME_SHAVED_UNIT_OPTIONS,
-              timeShaved.value.current
-            )}
-          />
-          {"."}
+          <p>
+            <Line>
+              {"… that takes "}
+              <NumberInput
+                value={taskDuration.value.current}
+                onChange={taskDuration.value.set}
+              />
+              <Select
+                value={taskDuration.unit.current}
+                onChange={taskDuration.unit.set}
+                options={pluralizeOptions(
+                  TASK_DURATION_UNIT_OPTIONS,
+                  taskDuration.value.current
+                )}
+              />
+              {","}
+            </Line>
+            <Line>
+              {"that I have to do "}
+              <NumberInput
+                value={taskFrequency.value.current}
+                onChange={taskFrequency.value.set}
+              />
+              <b>
+                {` ${plur(
+                  "time",
+                  taskFrequency.value.current === null
+                    ? undefined
+                    : taskFrequency.value.current
+                )} `}
+              </b>
+              <Select
+                value={taskFrequency.unit.current}
+                onChange={taskFrequency.unit.set}
+                options={TASK_FREQUENCY_UNIT_OPTIONS}
+              />
+            </Line>
+            <Line>
+              <b>{" for "}</b>
+              <NumberInput
+                value={taskLifetime.value.current}
+                onChange={taskLifetime.value.set}
+              />
+              <Select
+                value={taskLifetime.unit.current}
+                onChange={taskLifetime.unit.set}
+                options={pluralizeOptions(
+                  TASK_LIFETIME_UNIT_OPTIONS,
+                  taskLifetime.value.current
+                )}
+              />
+              {"."}
+            </Line>
+          </p>
+          <p>
+            <Line>
+              {"If I spent "}
+              <NumberInput
+                value={timeSpent.value.current}
+                onChange={timeSpent.value.set}
+              />
+              <Select
+                value={timeSpent.unit.current}
+                onChange={timeSpent.unit.set}
+                options={pluralizeOptions(
+                  TIME_SPENT_UNIT_OPTIONS,
+                  timeSpent.value.current
+                )}
+              />
+            </Line>
+            <Line>
+              {" I could shorten that task by "}
+              <NumberInput
+                value={timeShaved.value.current}
+                onChange={timeShaved.value.set}
+              />
+              <Select
+                value={timeShaved.unit.current}
+                onChange={timeShaved.unit.set}
+                options={pluralizeOptions(
+                  TIME_SHAVED_UNIT_OPTIONS,
+                  timeShaved.value.current
+                )}
+              />
+              {"."}
+            </Line>
+          </p>
         </div>
 
         {/* TODO; Add advanced panel to define number of worked hours in a day and worked days in a week ? */}
 
-        {canComputeResult && (
-          <Result
+        <h1>Would it be worth the time?</h1>
+        {canComputeResult ? (
+          <Results
             taskDuration={normalizeDuration(toUnitValue(taskDuration))}
             timeSpent={normalizeDuration(toUnitValue(timeSpent))}
             timeShaved={normalizeDuration(toUnitValue(timeShaved))}
             taskFrequency={normalizeFrequency(toUnitValue(taskFrequency))}
             taskLifetime={normalizeDuration(toUnitValue(taskLifetime))}
           />
+        ) : (
+          <EmptyResults />
         )}
       </div>
     </div>
   );
 };
 
-const Result: React.FC<{
+const Results: React.FC<{
   taskDuration: number;
   timeSpent: number;
   timeShaved: number;
@@ -311,24 +321,49 @@ const Result: React.FC<{
   );
 
   return (
-    <>
-      <h1>Would it be worth the time ?</h1>
+    <div className="results">
       <div className="answer">{worthIt ? "YES!" : "No..."}</div>
       <div className="stats">
-        <div>Time spent: {formatDuration(timeSpent)}</div>
-        <div>Time saved: {formatDuration(timeSaved)}</div>
-        <div>
-          Efficiency factor:{" "}
+        <Stat label="Time spent">{formatDuration(timeSpent)}</Stat>
+        <Stat label="Time saved">{formatDuration(timeSaved)}</Stat>
+        <Stat label="Efficiency factor">
           {efficiencyFactor === Infinity ? "∞" : efficiencyFactor.toFixed(0)}%
-        </div>
+        </Stat>
 
-        <div>Total time of the task: {formatDuration(initialTaskTime)}</div>
-        <div>
-          Total time of the task, after optimization:{" "}
+        <Stat label="Total time of the task">
+          {formatDuration(initialTaskTime)}
+        </Stat>
+        <Stat label="Total time of the task, after optimization">
           {formatDuration(optimizedTaskTime)}
-        </div>
+        </Stat>
       </div>
-    </>
+    </div>
+  );
+};
+
+const EmptyResults: React.FC = () => {
+  return (
+    <div className="results">
+      <div className="answer">-</div>
+      <div className="stats">
+        <Stat label="Time spent">-</Stat>
+        <Stat label="Time saved">-</Stat>
+        <Stat label="Efficiency factor">-</Stat>
+        <Stat label="Total time of the task">-</Stat>
+        <Stat label="Total time of the task, after optimization">-</Stat>
+      </div>
+    </div>
+  );
+};
+
+const Stat: React.FC<{ children?: React.ReactNode; label: string }> = ({
+  label,
+  children
+}) => {
+  return (
+    <div className="stat">
+      {label}: <b>{children}</b>
+    </div>
   );
 };
 
