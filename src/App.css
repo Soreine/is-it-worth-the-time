@@ -9,8 +9,8 @@
 .App {
   text-align: left;
   font-size: 1rem;
-  line-height: 1.7em;
-  padding: 1em;
+  line-height: 1.7rem;
+  margin: 1rem;
 }
 
 .content {
@@ -34,16 +34,17 @@ h1 {
   display: inline-block;
   /* vertical-align: text-bottom; */
   font-weight: bold;
-  height: 1.8em;
+  height: 1.8rem;
   border: none;
   padding: 0;
   background: none;
   border-bottom: 2px solid;
+  margin: 0rem 0.1rem;
 }
 
 input {
   text-align: center;
-  width: 2.4em;
+  width: 2.4rem;
 }
 
 select {
@@ -53,12 +54,16 @@ select {
   appearance: none;
 }
 
+.results {
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  padding: 1rem;
+}
+
 .answer {
+  text-align: center;
   font-weight: bold;
   font-family: Solway, Georgia, serif;
   font-size: 1.5rem;
-  margin: 1rem 0rem;
-}
-
-.stats {
+  margin-bottom: 1rem;
 }
