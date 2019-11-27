@@ -1,5 +1,4 @@
 import React from "react";
-import plur from "plur";
 import "./App.css";
 
 import {

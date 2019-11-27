@@ -154,15 +154,16 @@ function isItWorthIt(
 
   const timeSaved = timeShaved * taskLifetime * taskFrequency;
   const worthIt = timeSaved > timeSpent;
-  const efficiencyFactor =
-    timeSpent === 0 ? Infinity : (timeSaved / timeSpent) * 100;
+  const efficiencyFactor = timeSpent === 0 ? Infinity : timeSaved / timeSpent;
+
+  const efficiencyGain = (efficiencyFactor - 1) * 100;
 
   return {
     worthIt,
     timeSaved,
     initialTaskTime,
     optimizedTaskTime,
-    efficiencyFactor
+    efficiencyGain
   };
 }
 

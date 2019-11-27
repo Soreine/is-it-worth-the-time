@@ -17,7 +17,7 @@ const Results: React.FC<{
     timeSaved,
     initialTaskTime,
     optimizedTaskTime,
-    efficiencyFactor
+    efficiencyGain
   } = isItWorthIt(
     taskDuration,
     taskFrequency,
@@ -32,8 +32,9 @@ const Results: React.FC<{
       <div className="stats">
         <Stat label="Time spent">{formatDuration(timeSpent)}</Stat>
         <Stat label="Time saved">{formatDuration(timeSaved)}</Stat>
-        <Stat label="Efficiency factor">
-          {efficiencyFactor === Infinity ? "∞" : efficiencyFactor.toFixed(0)}%
+        <Stat label="Efficiency gain">
+          {efficiencyGain >= 0 ? "+" : ""}
+          {efficiencyGain === Infinity ? "∞" : efficiencyGain.toFixed(0)}%
         </Stat>
 
         <Stat label="Total time of the task">
@@ -57,7 +58,7 @@ const EmptyResults: React.FC = () => {
       <div className="stats">
         <Stat label="Time spent">-</Stat>
         <Stat label="Time saved">-</Stat>
-        <Stat label="Efficiency factor">-</Stat>
+        <Stat label="Efficiency gain">-</Stat>
         <Stat label="Total time of the task">-</Stat>
         <Stat label="Total time of the task, after optimization">-</Stat>
       </div>
