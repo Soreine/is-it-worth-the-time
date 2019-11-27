@@ -1,3 +1,9 @@
+# Is it worth the time?
+
+This is a simple web page helping you determine if the time you would spend optimizing a recurring task would be worth it. Inspired by XKCD https://xkcd.com/1205/
+
+# Development
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
